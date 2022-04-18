@@ -13,6 +13,31 @@ void zastavka () {
     fclose(f);
 }
 
+void form_t(float * t, int n) {
+    float tn = 1, tk = 10, dt;
+    dt = (tk - tn) / (n - 1);
+    for (int i = 0; i < n; i++) {       //массив t
+        t[i] = tn + i * dt;
+    }
+}
+
+void form_Uvx(float * Uvx, int n , float * t) {
+    float a0 = 2, a1 = 5, a2 = 0.3;
+    for (int i = 0; i < n; i++) {       //массив Uvx
+        Uvx[i] = a0 + a1 * t[i] + a2 * t[i] * t[i];   
+    }
+}
+
+void form_Uvix(float * Uvix, int n, float * Uvx) {
+    float Uvx1 = 10, a = 5, b = 0.05;
+    for (int i = 0; i < n; i++) {       //массив Uvix
+        if (Uvx[i] <= Uvx1) { Uvix[i] = a; }
+        else { Uvix[i] = b * Uvx[i] * Uvx[i]; }
+    }
+}
+
+
+
 float parametr (int n, float * t, float * Uvx, float * Uvix, int count, float dt) {
     float max_Uvix = FLT_MIN, min_Uvix = FLT_MAX, max_Uvx = FLT_MIN;
     float dlit = 0;
@@ -74,19 +99,25 @@ float parametr (int n, float * t, float * Uvx, float * Uvix, int count, float dt
             return vrem;
         }
     }
-
+    return 0;
 }
 
-void pog(int n, float * t, float * Uvx, float * Uvix, float count, float dt, float eps) {
+void pog(int n, float dt, float eps) { //aaaaaaaaa??????
+    float t[N], Uvx[N], Uvix[N];
     float p = 1;
     float par = FLT_MAX, par1;
+    int count = 11;
     while (p > eps) {
+        form_t(t, count);
+        form_Uvx(Uvx, count, t);
+        form_Uvix(Uvix, count, Uvx);
         par1 = parametr(n, t, Uvx, Uvix, count, dt);
         p = fabs(par - par1) / par1;
-        printf("№ = %d  Параметр = %f  Погрешность = %f\n", n, par1, p);
+    printf("count = %d  Параметр = %f  Погрешность = %f\n",count, par1, p); 
         par = par1;
-        n = 2 * n;
+        count = 2 * count;
     }
+    printf("Параметр = %f  Погрешность = %f\n", par1, p);
 }
 
 int main() {
@@ -98,7 +129,7 @@ int main() {
         puts("1 - Контрольный расчет для n точек");
         puts("2 - Расчет параметра с заданной точностью");
         puts("3 - Запись данных в файл");
-        puts("4 - Завершить работу");
+        puts("4 - Завершить работу\n");
         if(1 != scanf("%d", &choose) ) {
             puts("Error!");
             return 0;
@@ -115,22 +146,9 @@ int main() {
                     return 0;
                 }
 
-                float tn = 1, tk = 10, dt;
-                dt = (tk - tn) / (n - 1);
-                for (int i = 0; i < n; i++) {       //массив t
-                    t[i] = tn + i * dt;
-                }
-
-                float a0 = 2, a1 = 5, a2 = 0.3;
-                for (int i = 0; i < n; i++) {       //массив Uvx
-                    Uvx[i] = a0 + a1 * t[i] + a2 * t[i] * t[i];   
-                }
-
-                float Uvx1 = 10, a = 5, b = 0.05;
-                for (int i = 0; i < n; i++) {       //массив Uvix
-                    if (Uvx[i] <= Uvx1) { Uvix[i] = a; }
-                    else { Uvix[i] = b * Uvx[i] * Uvx[i]; }
-                }
+                form_t(t, n);
+                form_Uvx(Uvx, n, t);
+                form_Uvix(Uvix, n, Uvx);
 
                 puts("    №       t      Uvx      Uvix  ");
                 for (int i = 0; i < n; i++) {       //печать массивов
@@ -156,7 +174,7 @@ int main() {
                     puts("Error!");
                     return 0;
                 }
-                pog(choose, t, Uvx, Uvix, n, dt, eps);
+                pog(choose, dt, eps);
                 break;
             }
 
