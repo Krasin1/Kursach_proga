@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#define N 1000
+#define N 100000
 
 void zastavka () {
     FILE *f = fopen("zast.txt","r");
@@ -102,27 +102,28 @@ float parametr (int n, float * t, float * Uvx, float * Uvix, int count, float dt
     return 0;
 }
 
-void pog(int n, float dt, float eps) { //aaaaaaaaa??????
-    float t[N], Uvx[N], Uvix[N];
+void pog(int n, int count, float eps) { //aaaaaaaaa
+    float tk = 10, tn = 1;
+    float t[N], Uvx[N], Uvix[N], dt;
     float p = 1;
     float par = FLT_MAX, par1;
-    int count = 11;
     while (p > eps) {
+        dt = (tk - tn) / (count - 1);
         form_t(t, count);
         form_Uvx(Uvx, count, t);
         form_Uvix(Uvix, count, Uvx);
         par1 = parametr(n, t, Uvx, Uvix, count, dt);
         p = fabs(par - par1) / par1;
-    printf("count = %d  Параметр = %f  Погрешность = %f\n",count, par1, p); 
         par = par1;
         count = 2 * count;
+        // printf("count = %d  Параметр = %f  Погрешность = %f\n",count, par1, p); 
     }
-    printf("Параметр = %f  Погрешность = %f\n", par1, p);
+    printf("\nПараметр = %f  Погрешность = %f\n", par1, p);
 }
 
 int main() {
     float t[N], Uvx[N], Uvix[N];
-    int n, choose;
+    int n = 2, choose;
     zastavka();
     while (1) {
         puts("\n      Меню");           //меню
@@ -136,12 +137,12 @@ int main() {
         }
         switch(choose) {
             case 1:{
-                puts("Введтие кол-во точек для контрольного расчета");
+                puts("\nВведтие кол-во точек для контрольного расчета\n");
                 if (1 != scanf("%d", &n) ) {
                     puts("Error!");
                     return 0;
                 }
-                if (n < 2 || n > N) {
+                if (n < 2 || n > 1000) {
                     puts("\nЧё-то тут не так");
                     return 0;
                 }
@@ -150,7 +151,7 @@ int main() {
                 form_Uvx(Uvx, n, t);
                 form_Uvix(Uvix, n, Uvx);
 
-                puts("    №       t      Uvx      Uvix  ");
+                puts("\n    №       t      Uvx      Uvix  ");
                 for (int i = 0; i < n; i++) {       //печать массивов
                     printf("  %3d   %6.3f   %6.3f   %6.3f\n",i,t[i],Uvx[i],Uvix[i]);
                 }
@@ -159,8 +160,7 @@ int main() {
 
             case 2:{
                 float tn = 1, tk = 10, dt, eps;
-                dt = (tk - tn) / (n - 1);
-                puts("\nЗадайте погрешность(0 <= x <= 1):");
+                printf("\nЗадайте погрешность(0 <= x <= 1): ");
                 if (1 != scanf("%f", &eps) || eps < 0 || eps > 1){
                     puts("Error!");
                     return 0;
@@ -174,7 +174,7 @@ int main() {
                     puts("Error!");
                     return 0;
                 }
-                pog(choose, dt, eps);
+                pog(choose, n, eps);
                 break;
             }
 
@@ -195,7 +195,7 @@ int main() {
                 break;
             }
             case 4: {
-                puts("Bye");
+                puts("\nBye!");
                 return 0;
             }
 
